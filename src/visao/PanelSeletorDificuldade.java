@@ -140,18 +140,71 @@ public class PanelSeletorDificuldade extends JPanel {
 		return lblNewLabel;
 	}
 	private JButton getBtnNewButton() {
-		if (btnNewButton == null) {
-			btnNewButton = new JButton("");
-			btnNewButton.setContentAreaFilled(false);
-			btnNewButton.setBackground(new Color(255, 255, 255));
-			btnNewButton.setBorder(null);
-			btnNewButton.setBorderPainted(false);
-			btnNewButton.setIcon(new ImageIcon("C:\\Users\\Rodrigo\\Downloads\\button_buscar.png"));
-			btnNewButton.setBounds(364, 349, 89, 23);
-			
-		}
-		return btnNewButton;
+	    if (btnNewButton == null) {
+	        btnNewButton = new JButton("");
+	        btnNewButton.setContentAreaFilled(false);
+	        btnNewButton.setBackground(new Color(255, 255, 255));
+	        btnNewButton.setBorder(null);
+	        btnNewButton.setBorderPainted(false);
+	        btnNewButton.setIcon(new ImageIcon("C:\\Users\\Rodrigo\\Downloads\\button_buscar.png"));
+	        btnNewButton.setBounds(364, 349, 89, 23);
+
+	        // Adicione o ActionListener para tratar o clique no botão
+	        btnNewButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                // Obtenha os filtros selecionados
+	                boolean multiplicacao = chckbxNewCheckBox.isSelected();
+	                boolean divisao = chckbxNewCheckBox_1.isSelected();
+	                boolean adicao = chckbxNewCheckBox_2.isSelected();
+	                boolean subtracao = chckbxNewCheckBox_3.isSelected();
+	                String dificuldade = comboBox_1.getSelectedItem().toString();
+
+	                // Realize a consulta no banco de dados usando Hibernate
+	                // Certifique-se de ter as configurações adequadas do Hibernate e a dependência correta adicionada ao projeto
+	                Session session = HibernateUtil.getSessionFactory().openSession();
+	                session.beginTransaction();
+
+	                // Construa a consulta usando os filtros selecionados
+	                String queryString = "FROM Pergunta WHERE ";
+	                List<String> conditions = new ArrayList<>();
+
+	                if (multiplicacao) {
+	                    conditions.add("filtroPergunta LIKE '%multiplicação%'");
+	                }
+	                if (divisao) {
+	                    conditions.add("filtroPergunta LIKE '%divisão%'");
+	                }
+	                if (adicao) {
+	                    conditions.add("filtroPergunta LIKE '%adição%'");
+	                }
+	                if (subtracao) {
+	                    conditions.add("filtroPergunta LIKE '%subtração%'");
+	                }
+
+	                conditions.add("nivelDificuldadePergunta = '" + dificuldade.toLowerCase() + "'");
+
+	                queryString += String.join(" AND ", conditions);
+
+	                // Execute a consulta
+	                Query query = session.createQuery(queryString);
+	                List<Pergunta> perguntas = query.list();
+
+	                // Exiba a questão encontrada ou uma mensagem caso não haja questões
+	                if (!perguntas.isEmpty()) {
+	                    Pergunta pergunta = perguntas.get(0); // Obtenha a primeira pergunta encontrada
+	                    System.out.println("Questão: " + pergunta.getEnunciadoPergunta());
+	                } else {
+	                    System.out.println("Nenhuma questão encontrada com os filtros selecionados.");
+	                }
+
+	                session.getTransaction().commit();
+	                session.close();
+	            }
+	        });
+	    }
+	    return btnNewButton;
 	}
+
 	public void checagem(JCheckBox cb) {
 		if(cb.isSelected()) {
 			checar++;
